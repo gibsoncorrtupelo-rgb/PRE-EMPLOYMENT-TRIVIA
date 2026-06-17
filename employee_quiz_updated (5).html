@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Training Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray: #6b7280;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quiz-container {
+            max-width: 700px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .quiz-header {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+        
+        .progress {
+            height: 100%;
+            background: white;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .quiz-body {
+            padding: 2.5rem;
+        }
+        
+        .question {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+        
+        .image-container {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            padding: 1rem 1.25rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .option:hover {
+            border-color: var(--primary);
+            background: #f0f9ff;
+        }
+        
+        .option.selected {
+            border-color: var(--primary);
+            background: #eff6ff;
+            font-weight: 500;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2.5rem;
+            gap: 1rem;
+        }
+        
+        button {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-prev {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+        
+        .btn-next {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-submit {
+            background: var(--success);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        
+        .results {
+            padding: 2.5rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .score-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 3rem;
+            font-weight: 700;
+            position: relative;
+        }
+        
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0% var(--percentage), #e5e7eb var(--percentage) 100%);
+        }
+        
+        .score-inner {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            flex-direction: column;
+        }
+        
+        .feedback {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+        
+        .review-questions {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        
+        .review-item {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            background: #f8fafc;
+        }
+
+        .prod-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin: 1.25rem 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .prod-table th {
+            background: #1e40af;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+        }
+        .prod-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+        .prod-table tr:nth-child(even) td { background: #f8fafc; }
+        .prod-table tr:last-child td { border-bottom: none; }
+        .prod-table .total-row td {
+            background: #eff6ff;
+            font-weight: 600;
+            border-top: 2px solid #bfdbfe;
+        }
+        .blank-cell { color: #9ca3af; font-style: italic; }
+
+        .name-screen {
+            padding: 3rem 2.5rem;
+            text-align: center;
+        }
+        .name-screen h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .name-screen p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        .name-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            margin-bottom: 1.5rem;
+        }
+        .name-input:focus { border-color: #2563eb; }
+        .name-error {
+            color: #ef4444;
+            font-size: 0.9rem;
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .submit-status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+            min-height: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container" id="quizContainer">
+        <!-- Name Entry Screen -->
+        <div id="nameScreen" style="display:block;">
+            <div class="quiz-header" style="border-radius: 20px 20px 0 0;">
+                <h1>Employee Assessment</h1>
+                <p style="margin:0.5rem 0 0; opacity:0.85; font-size:0.95rem;">Math, Logic &amp; Critical Thinking</p>
+            </div>
+            <div class="name-screen">
+                <h2>Welcome! 👋</h2>
+                <p>Please enter your name to begin the assessment.<br>Your results will be recorded automatically.</p>
+                <input type="text" id="employeeNameInput" class="name-input" placeholder="Your Name" autocomplete="name" />
+                <div class="name-error" id="nameError">Please enter your name before starting.</div>
+                <button class="btn-next" style="width:100%; padding:1rem; font-size:1.1rem;" onclick="startQuiz()">Begin Assessment →</button>
+                <p style="margin-top:1.5rem; font-size:0.85rem; color:#9ca3af;">⏱ You will have 30 minutes to complete 49 questions.<br>A score of 70% or higher is required to pass.</p>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="quiz-header" id="quizHeader" style="display:none;">
+            <h1 id="quizTitle">Employee Assessment - Math, Logic &amp; Critical Thinking</h1>
+            <div style="position: absolute; top: 20px; right: 30px; font-size: 1.1rem; font-weight: 600; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 9999px;" id="timerDisplay">
+                30:00
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Body -->
+        <div class="quiz-body" id="quizBody" style="display:none;">
+            <div id="questionContainer">
+                <!-- Questions populated by JS -->
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn-prev" id="prevBtn" onclick="prevQuestion()">Previous</button>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Next</button>
+            </div>
+        </div>
+        
+        <!-- Results Screen -->
+        <div class="results" id="resultsScreen" style="display:none;">
+            <h2>Quiz Complete!</h2>
+            <div class="score-circle" id="scoreCircle">
+                <div class="score-inner">
+                    <div id="scoreText">85%</div>
+                    <div style="font-size: 0.9rem; color: #6b7280;">Score</div>
+                </div>
+            </div>
+            <p id="scoreMessage"></p>
+            
+            <div class="feedback" id="feedbackText"></div>
+            
+            <button class="btn-submit" onclick="restartQuiz()" style="margin-top: 1.5rem;">Retake Quiz</button>
+            <div class="submit-status" id="submitStatus"></div>
+            
+            <div class="review-questions" id="reviewSection">
+                <h3 style="margin-bottom: 1rem;">Review Your Answers</h3>
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // ===== GOOGLE SHEETS / EMAIL CONFIG =====
+        // Paste your deployed Apps Script Web App URL below after deploying
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_9nJa1InwP59eYgPdMMkT-j29Pr_pCBNPBxUaP81IIpYVWGya7u_YQRK5J5gjkWaQ/exec';
+
+        let employeeName = '';
+        let quizStartTime = null;
+        let attemptNumber = 1;
+
+        // Topic group definitions
+        const TOPIC_GROUPS = {
+            'Production Math':        [1, 2, 4, 5, 8, 10, 16],
+            'Paper & Box Calc':       [3, 9],
+            'Fractions & Decimals':   [7, 9, 18],
+            'General Math':           [6, 11, 12, 19],
+            'Logic & Sequences':      [20, 21, 22, 23, 24, 25, 27, 28, 29],
+            'Critical Thinking':      [30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+            'Applied Word Problems':  [40, 41, 42, 43, 44, 45, 46, 47, 48, 49],
+            'Table Reading':          [4, 17]
+        };
+
+        // ===== QUIZ CONFIG =====
+        const QUIZ_CONFIG = {
+            title: "Employee Assessment - Math, Logic & Critical Thinking",
+            timeLimit: 30 * 60, // 30 minutes
+            passingScore: 70,
+            companyName: "Breedlove X Manufacturing",
+            certificateTitle: "Certificate of Completion"
+        };
+
+        let questions = [
+            {
+                id: 1,
+                question: "We received an order for 120,000 boxes. The boxes must be divided into units of 620 boxes each. How many units will we have and how many boxes will be in the partial unit?",
+                options: ["201 units with a partial of 132", "193 units with a partial of 340", "190 units with a partial of 2200", "460 units with no partial unit"],
+                correct: 1,
+                explanation: "120,000 ÷ 620 = 193 remainder 340 → 193 full units with 340 boxes in the partial unit."
+            },
+            {
+                id: 2,
+                question: "Our customer returned 12,450 boxes due to bad print. Each box costs $2.43. How much money did the company have to refund the customer?",
+                options: ["$22,542.60", "$256.00", "$30,253.50", "$5,123.46"],
+                correct: 2,
+                explanation: "12,450 × $2.43 = $30,253.50"
+            },
+            {
+                id: 3,
+                question: "Receiving processed 1,350 pieces of paper for an order. This product is a \"4 out\" meaning 4 boxes per sheet are produced. How many boxes would be made if 86 pieces were thrown away due to damage?",
+                options: ["5,056", "5,400", "5,314", "1,264"],
+                correct: 0,
+                explanation: "(1,350 - 86) × 4 = 1,264 × 4 = 5,056 boxes"
+            },
+            {
+                id: 4,
+                question: "Complete the production table below. What are A, B, C, and the Total D?",
+                table: `<table class="prod-table"><thead><tr><th>Date</th><th>Shift</th><th>Operator</th><th>Production</th><th>Totals</th></tr></thead><tbody><tr><td>5/19/2026</td><td>Day</td><td>BW</td><td>5×1250 &nbsp; 1×220</td><td class="blank-cell">A = ?</td></tr><tr><td>5/19/2026</td><td>Night</td><td>DC</td><td>16×1250</td><td class="blank-cell">B = ?</td></tr><tr><td>5/20/2026</td><td>Day</td><td>BW</td><td>10×1250 &nbsp; 1×925</td><td class="blank-cell">C = ?</td></tr><tr class="total-row"><td colspan="4" style="text-align:right;font-weight:600;">Total:</td><td class="blank-cell">D = ?</td></tr></tbody></table>`,
+                options: ["A=4,670, B=30,000, C=39,895, D=13,425", "A=6,470, B=20,000, C=1,250, D=39,895", "A=4,670, B=20,000, C=12,500, D=39,895", "A=6,470, B=20,000, C=13,425, D=39,895"],
+                correct: 3,
+                explanation: "A=(5×1250)+(1×220)=6,470 | B=16×1250=20,000 | C=(10×1250)+(1×925)=13,425 | D=6,470+20,000+13,425=39,895"
+            },
+            {
+                id: 5,
+                question: "We received 551 sheets of paper. We lost 15 to dunnage, 6 for checkout boxes, 25 due to forklift damage, and 37 for bad print. How many sheets are left for boxes?",
+                options: ["428", "468", "438", "478"],
+                correct: 1,
+                explanation: "551 - 15 - 6 - 25 - 37 = 468 sheets"
+            },
+            {
+                id: 6,
+                question: "A rectangle has a length of 12 and a width of 5. What is its area?",
+                options: ["60", "34", "17", "70"],
+                correct: 0,
+                explanation: "Area = length × width = 12 × 5 = 60"
+            },
+            {
+                id: 7,
+                question: "Convert 45 ¾ into a decimal.",
+                options: ["45.5", "45.25", "45.75", "45.255"],
+                correct: 2,
+                explanation: "3 ÷ 4 = 0.75, so 45 ¾ = 45.75"
+            },
+            {
+                id: 8,
+                question: "A triangle has sides 6, 8, and 10. Is it a right triangle?",
+                options: ["Yes", "No"],
+                correct: 0,
+                explanation: "6² + 8² = 36 + 64 = 100 = 10² (Pythagorean theorem)"
+            },
+            {
+                id: 9,
+                question: "3/8 + 2/16 = ____",
+                options: ["9/16", "5/16", "5/8", "1/2"],
+                correct: 3,
+                explanation: "Convert 3/8 to 6/16. Then 6/16 + 2/16 = 8/16 = 1/2"
+            },
+            {
+                id: 10,
+                question: "120,000 boxes were ordered at $4.53 each. What is the total cost for this order?",
+                options: ["$543,600", "$553,600", "$522,600", "$512,600"],
+                correct: 0,
+                explanation: "120,000 × $4.53 = $543,600"
+            },
+            {
+                id: 11,
+                question: "Find the mean of: 5, 7, 8, 10, 15",
+                options: ["9", "8", "10", "7"],
+                correct: 0,
+                explanation: "(5+7+8+10+15)/5 = 45/5 = 9"
+            },
+            {
+                id: 12,
+                question: "What is the median of: 2, 4, 6, 8, 20",
+                options: ["6", "4", "8", "5"],
+                correct: 0,
+                explanation: "Middle value in ordered list: 6"
+            },
+            {
+                id: 13,
+                question: "A bag contains 5 red, 3 blue, and 2 green marbles. What is the probability of drawing a blue marble?",
+                options: ["3/10", "1/3", "3/5", "0.3"],
+                correct: 0,
+                explanation: "3 blue out of 10 total = 3/10"
+            },
+            {
+                id: 14,
+                question: "If a fair coin is flipped three times, how many possible outcomes are there?",
+                options: ["8", "6", "4", "16"],
+                correct: 0,
+                explanation: "2³ = 8"
+            },
+            {
+                id: 15,
+                question: "What is the probability of rolling a 5 on a standard six-sided die?",
+                options: ["1/6", "1/5", "5/6", "1/2"],
+                correct: 0,
+                explanation: "1 favorable out of 6 sides"
+            },
+            {
+                id: 16,
+                question: "How many units will you get if we produce 4,500 boxes and each unit has 60 boxes?",
+                options: ["55", "65", "75", "85"],
+                correct: 2,
+                explanation: "4,500 ÷ 60 = 75 units"
+            },
+            {
+                id: 17,
+                question: "Review the production table below. Which figures are NOT correct?",
+                table: `<table class="prod-table"><thead><tr><th>Date</th><th>Shift</th><th>Operator</th><th>Production</th><th>Totals</th></tr></thead><tbody><tr><td>5/5/2026</td><td>Day</td><td>LS</td><td>18×280 &nbsp; 54×250</td><td>A. 18,540</td></tr><tr><td>5/5/2026</td><td>Night</td><td>ZH</td><td>84×250</td><td>B. 21,000</td></tr><tr><td>5/6/2026</td><td>Day</td><td>TH</td><td>75×250</td><td>C. 18,050</td></tr><tr class="total-row"><td colspan="4" style="text-align:right;font-weight:600;">Total:</td><td>D. 58,200</td></tr></tbody></table>`,
+                options: ["A and D", "B and C", "C and D", "A and B"],
+                correct: 2,
+                explanation: "C should be 75×250=18,750 (not 18,050). D should be 18,540+21,000+18,750=58,290 (not 58,200). So C and D are wrong."
+            },
+            {
+                id: 18,
+                question: "Evaluate: 3/4 + 2/3",
+                options: ["17/12", "5/7", "1/2", "13/12"],
+                correct: 0,
+                explanation: "Common denominator 12: (9+8)/12 = 17/12"
+            },
+            {
+                id: 19,
+                question: "A car travels 180 miles in 3 hours. What is its average speed?",
+                options: ["60 mph", "45 mph", "90 mph", "30 mph"],
+                correct: 0,
+                explanation: "180 ÷ 3 = 60 mph"
+            },
+            {
+                id: 20,
+                question: "What number comes next? 2, 6, 12, 20, 30, ___",
+                options: ["42", "40", "36", "48"],
+                correct: 0,
+                explanation: "Differences increase by 2 each time (+4,+6,+8,+10,+12) → 30+12=42"
+            },
+            {
+                id: 21,
+                question: "What letter comes next? A, C, F, J, O, ___",
+                options: ["U", "S", "T", "P"],
+                correct: 0,
+                explanation: "Positions: 1,3,6,10,15 → next 21st letter = U"
+            },
+            {
+                id: 22,
+                question: "If all roses are flowers and some flowers fade quickly, which statement must be true?",
+                options: ["All roses fade quickly", "Some roses fade quickly", "Roses are flowers", "No roses fade quickly"],
+                correct: 2,
+                explanation: "This is given directly in the premises."
+            },
+            {
+                id: 23,
+                question: "Which word does not belong? Apple, Banana, Carrot, Orange",
+                options: ["Apple", "Banana", "Carrot", "Orange"],
+                correct: 2,
+                explanation: "Carrot is a vegetable; others are fruits."
+            },
+            {
+                id: 24,
+                question: "If today is Tuesday, what day will it be 17 days from now?",
+                options: ["Friday", "Saturday", "Thursday", "Sunday"],
+                correct: 0,
+                explanation: "17 mod 7 = 3 → Tuesday + 3 = Friday"
+            },
+            {
+                id: 25,
+                question: "Complete the analogy: Book : Read :: Song : _____",
+                options: ["Listen", "Sing", "Write", "Play"],
+                correct: 0,
+                explanation: "You read a book; you listen to a song."
+            },
+            {
+                id: 26,
+                question: "If a train leaves at 2:00 PM and arrives at 5:30 PM, how long was the trip?",
+                options: ["3 hours 30 minutes", "3 hours", "4 hours", "2 hours 30 minutes"],
+                correct: 0,
+                explanation: "From 2:00 to 5:00 is 3 hours + 30 minutes."
+            },
+            {
+                id: 27,
+                question: "Which number does not fit? 3, 6, 9, 11, 12, 15",
+                options: ["11", "9", "12", "15"],
+                correct: 0,
+                explanation: "11 is not a multiple of 3."
+            },
+            {
+                id: 28,
+                question: "If all squares are rectangles and all rectangles are quadrilaterals, then all squares are:",
+                options: ["Triangles", "Quadrilaterals", "Circles", "Pentagons"],
+                correct: 1,
+                explanation: "Transitive property of the statements."
+            },
+            {
+                id: 29,
+                question: "What comes next? 1, 4, 9, 16, 25, ___",
+                options: ["36", "30", "49", "32"],
+                correct: 0,
+                explanation: "Perfect squares: 6² = 36"
+            },
+            {
+                id: 30,
+                question: "A news article cites only one anonymous source. What is the best reason to be cautious?",
+                options: ["It may lack verification or multiple perspectives", "Anonymous sources are always unreliable", "The article is too short", "It doesn't have graphs"],
+                correct: 0,
+                explanation: "Single anonymous sources reduce credibility due to lack of corroboration."
+            },
+            {
+                id: 31,
+                question: "Which is the strongest evidence that a new study is reliable?",
+                options: ["Large sample size", "Colorful graphs", "Social media popularity", "Celebrity endorsement"],
+                correct: 0,
+                explanation: "Large, representative samples improve reliability."
+            },
+            {
+                id: 32,
+                question: "A company claims its product is \"50% better.\" What additional information is most important?",
+                options: ["Compared to what? And how was it measured?", "The price of the product", "How long the company has existed", "The color of the packaging"],
+                correct: 0,
+                explanation: "Vague claims need clear benchmarks and methodology."
+            },
+            {
+                id: 33,
+                question: "Why is correlation not always proof of causation?",
+                options: ["Other factors may cause both variables", "Correlation means causation", "Studies always control variables", "It's only true for small samples"],
+                correct: 0,
+                explanation: "A third variable or coincidence can create spurious correlations."
+            },
+            {
+                id: 34,
+                question: "A student argues, \"Everyone in my friend group believes this, so it must be true.\" What reasoning error is being made?",
+                options: ["Bandwagon fallacy / Appeal to popularity", "Ad hominem", "Straw man", "False dilemma"],
+                correct: 0,
+                explanation: "Popularity in a small group doesn't prove truth."
+            },
+            {
+                id: 35,
+                question: "Why is it important to consider opposing viewpoints?",
+                options: ["To avoid bias and strengthen your own understanding", "To argue better against them", "It's required by law", "It wastes time"],
+                correct: 0,
+                explanation: "It promotes critical thinking and better decisions."
+            },
+            {
+                id: 36,
+                question: "A website contains many spelling errors and no sources. How should its credibility be rated?",
+                options: ["Low credibility", "High credibility", "Neutral", "Depends on the topic"],
+                correct: 0,
+                explanation: "Errors and lack of sources are red flags."
+            },
+            {
+                id: 37,
+                question: "Which action best reduces bias in decision-making?",
+                options: ["Seeking diverse perspectives and evidence", "Going with your gut feeling", "Asking only trusted friends", "Ignoring data that contradicts your view"],
+                correct: 0,
+                explanation: "Diverse input counters personal biases."
+            },
+            {
+                id: 38,
+                question: "A poll surveyed only customers entering one store. What potential issue exists?",
+                options: ["Selection bias / Not representative", "Too many questions", "Questions were too easy", "No issue"],
+                correct: 0,
+                explanation: "Sample is not random or representative of broader population."
+            },
+            {
+                id: 39,
+                question: "Why should extraordinary claims require strong evidence?",
+                options: ["To prevent misinformation and maintain scientific standards", "Extraordinary claims are always false", "It's a waste of time", "Only experts can evaluate them"],
+                correct: 0,
+                explanation: "Higher burden of proof for claims that contradict established knowledge."
+            },
+            {
+                id: 40,
+                question: "A store offers a 20% discount on a $50 item. What is the sale price?",
+                options: ["$40", "$45", "$30", "$35"],
+                correct: 0,
+                explanation: "50 × 0.8 = 40"
+            },
+            {
+                id: 41,
+                question: "You have 3 shirts and 4 pairs of pants. How many different outfits can you make?",
+                options: ["12", "7", "16", "9"],
+                correct: 0,
+                explanation: "3 × 4 = 12 combinations"
+            },
+            {
+                id: 42,
+                question: "A tank holds 100 gallons and is 60% full. How many gallons are in the tank?",
+                options: ["60", "40", "160", "50"],
+                correct: 0,
+                explanation: "100 × 0.6 = 60"
+            },
+            {
+                id: 43,
+                question: "If 5 workers complete a task in 8 hours, how many worker-hours are required?",
+                options: ["40", "13", "8", "5"],
+                correct: 0,
+                explanation: "5 workers × 8 hours = 40 worker-hours"
+            },
+            {
+                id: 44,
+                question: "A family spends $2,400 per month. If housing is 30% of expenses, how much is spent on housing?",
+                options: ["$720", "$800", "$600", "$900"],
+                correct: 0,
+                explanation: "2400 × 0.3 = 720"
+            },
+            {
+                id: 45,
+                question: "A recipe requires 2 cups of flour for 12 cookies. How many cups are needed for 30 cookies?",
+                options: ["5", "4", "2.5", "7.5"],
+                correct: 0,
+                explanation: "Proportion: (2/12) × 30 = 5"
+            },
+            {
+                id: 46,
+                question: "A school bus seats 48 students. How many buses are needed for 230 students?",
+                options: ["5", "6", "4", "7"],
+                correct: 0,
+                explanation: "230 ÷ 48 ≈ 4.79 → round up to 5 buses"
+            },
+            {
+                id: 47,
+                question: "A password consists of 3 digits. How many possible combinations are there if digits can repeat?",
+                options: ["1000", "720", "999", "500"],
+                correct: 0,
+                explanation: "10 options per digit × 3 digits = 10³ = 1000"
+            },
+            {
+                id: 48,
+                question: "You have a 5-gallon bucket and a 3-gallon bucket. How could you measure exactly 4 gallons?",
+                options: ["Fill 5, pour into 3 (leaves 2 in 5), empty 3, pour 2 into 3, fill 5 again, pour into 3 until full (adds 1, leaves 4 in 5)", "Fill both and add", "Use 3 twice", "Impossible"],
+                correct: 0,
+                explanation: "Classic water jug puzzle solution as described."
+            },
+            {
+                id: 49,
+                question: "A farmer has chickens and cows. There are 20 heads and 56 legs total. How many chickens and cows are there?",
+                options: ["12 chickens and 8 cows", "16 chickens and 4 cows", "10 chickens and 10 cows", "14 chickens and 6 cows"],
+                correct: 0,
+                explanation: "Let C=chickens, W=cows. C + W = 20; 2C + 4W = 56 → C=12, W=8"
+            }
+        ];
+        
+        let currentQuestionIndex = 0;
+        let selectedAnswers = new Array(questions.length).fill(null);
+        let quizCompleted = false;
+        let timerInterval;
+        let timeRemaining = QUIZ_CONFIG.timeLimit;
+        
+
+        window.startQuiz = function() {
+            const nameInput = document.getElementById('employeeNameInput').value.trim();
+            if (!nameInput) {
+                document.getElementById('nameError').style.display = 'block';
+                return;
+            }
+            employeeName = nameInput;
+            quizStartTime = Date.now();
+            document.getElementById('nameError').style.display = 'none';
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('quizHeader').style.display = 'block';
+            document.getElementById('quizBody').style.display = 'block';
+            document.getElementById('quizTitle').textContent = QUIZ_CONFIG.title;
+            renderQuestion();
+            startTimer();
+        }
+
+        function calcTopicScores() {
+            const scores = {};
+            for (const [topic, qIds] of Object.entries(TOPIC_GROUPS)) {
+                let correct = 0, total = 0;
+                qIds.forEach(id => {
+                    const qIdx = questions.findIndex(q => q.id === id);
+                    if (qIdx === -1) return;
+                    total++;
+                    if (selectedAnswers[qIdx] === questions[qIdx].correct) correct++;
+                });
+                scores[topic] = total > 0 ? Math.round((correct / total) * 100) : 0;
+            }
+            return scores;
+        }
+
+        function getTimeTaken() {
+            if (!quizStartTime) return '—';
+            const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
+            const m = Math.floor(elapsed / 60);
+            const s = elapsed % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function submitToSheets(data) {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_WEB_APP_URL_HERE') return;
+            const statusEl = document.getElementById('submitStatus');
+            if (statusEl) statusEl.textContent = '⏳ Saving results...';
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(() => {
+                if (statusEl) statusEl.textContent = '✅ Results saved & email sent to supervisor.';
+            }).catch(() => {
+                if (statusEl) statusEl.textContent = '⚠️ Could not save results. Please notify your supervisor.';
+            });
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('questionContainer');
+            const q = questions[currentQuestionIndex];
+            
+            let html = `
+                <div class="question">Q${q.id}: ${q.question}</div>
+            `;
+            
+            // Image support (add image URL to question object if needed)
+            if (q.image) {
+                html += `
+                    <div class="image-container">
+                        <img src="${q.image}" class="question-image" alt="Question visual">
+                    </div>
+                `;
+            }
+
+            // Table support
+            if (q.table) {
+                html += `<div class="table-container">${q.table}</div>`;
+            }
+            
+            html += `<div class="options">`;
+            
+            q.options.forEach((option, index) => {
+                const isSelected = selectedAnswers[currentQuestionIndex] === index;
+                html += `
+                    <div class="option ${isSelected ? 'selected' : ''}" onclick="selectAnswer(${index})">
+                        <span style="font-size: 1.4rem; color: #64748b;">${String.fromCharCode(65 + index)}</span>
+                        <span>${option}</span>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
+            
+            // Update progress
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            
+            // Update buttons
+            document.getElementById('prevBtn').style.display = currentQuestionIndex === 0 ? 'none' : 'block';
+            document.getElementById('nextBtn').textContent = currentQuestionIndex === questions.length - 1 ? 'Finish Quiz' : 'Next';
+        }
+        
+        window.selectAnswer = function(index) {
+            selectedAnswers[currentQuestionIndex] = index;
+            renderQuestion();
+        }
+        
+        window.nextQuestion = function() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+        
+        window.prevQuestion = function() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+        
+        function finishQuiz() {
+            quizCompleted = true;
+            clearInterval(timerInterval);
+            document.getElementById('quizBody').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            // Calculate score
+            let correctCount = 0;
+            
+            questions.forEach((q, index) => {
+                if (selectedAnswers[index] === q.correct) {
+                    correctCount++;
+                }
+            });
+            
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            const topicScores = calcTopicScores();
+            const timeTaken = getTimeTaken();
+            const passed = percentage >= QUIZ_CONFIG.passingScore;
+
+            // Submit to Google Sheets & trigger email
+            submitToSheets({
+                timestamp: new Date().toLocaleString(),
+                employeeName,
+                score: percentage,
+                correct: correctCount,
+                total: questions.length,
+                passFail: passed ? 'Pass' : 'Fail',
+                timeTaken,
+                attempt: attemptNumber,
+                certificateEarned: passed ? 'Yes' : 'No',
+                ...topicScores
+            });
+
+            
+            // Update score circle
+            const scoreCircle = document.getElementById('scoreCircle');
+            scoreCircle.style.setProperty('--percentage', `${percentage}%`);
+            document.getElementById('scoreText').textContent = `${percentage}%`;
+            
+            // Message + Pass/Fail
+            
+            // Score message
+            document.getElementById('scoreMessage').textContent = passed
+                ? `🎉 Congratulations! You passed with ${percentage}%.`
+                : `You scored ${percentage}%. A score of ${QUIZ_CONFIG.passingScore}% or higher is required to pass.`;
+
+            // Feedback box
+            const feedbackEl = document.getElementById('feedbackText');
+            if (passed) {
+                feedbackEl.style.borderLeft = '4px solid #10b981';
+                feedbackEl.style.background = '#f0fdf4';
+                feedbackEl.innerHTML = `<strong style="color:#065f46;">✅ Great work!</strong> You've demonstrated a strong understanding of the material. You are cleared to proceed.`;
+            } else if (percentage >= 50) {
+                feedbackEl.style.borderLeft = '4px solid #f59e0b';
+                feedbackEl.style.background = '#fffbeb';
+                feedbackEl.innerHTML = `<strong style="color:#92400e;">⚠️ Almost there!</strong> You need a <strong>${QUIZ_CONFIG.passingScore}%</strong> to pass. Review the following areas before retaking:<ul style="margin:8px 0 0 1.2rem;padding:0;color:#78350f;"><li>Production table calculations (Q4 &amp; Q17)</li><li>Box unit and sheet math (Q1, Q3, Q5)</li><li>Order costing and pricing (Q2, Q8, Q10)</li></ul>`;
+            } else {
+                feedbackEl.style.borderLeft = '4px solid #ef4444';
+                feedbackEl.style.background = '#fef2f2';
+                feedbackEl.innerHTML = `<strong style="color:#991b1b;">❌ Needs Improvement.</strong> You scored below 50%. Please review all training materials thoroughly before retaking. Focus on:<ul style="margin:8px 0 0 1.2rem;padding:0;color:#7f1d1d;"><li>Basic production math and table reading</li><li>Unit calculations and order quantities</li><li>Fraction and decimal conversions</li><li>Critical thinking and logic questions</li></ul>`;
+            }
+            
+            // Show certificate button if passed
+            const existingCertBtn = document.querySelector('#resultsScreen button[onclick="generateCertificate()"]');
+            if (passed && !existingCertBtn) {
+                const certBtn = document.createElement('button');
+                certBtn.className = 'btn-submit';
+                certBtn.style.marginTop = '1rem';
+                certBtn.style.marginLeft = '1rem';
+                certBtn.textContent = '📜 Download Certificate';
+                certBtn.onclick = generateCertificate;
+                const retakeBtn = document.querySelector('#resultsScreen .btn-submit');
+                retakeBtn.parentNode.insertBefore(certBtn, retakeBtn.nextSibling);
+            }
+            
+            // Generate review
+            let reviewHTML = '';
+            questions.forEach((q, index) => {
+                const userAnswer = selectedAnswers[index] !== null ? q.options[selectedAnswers[index]] : "No answer";
+                const isCorrect = selectedAnswers[index] === q.correct;
+                
+                reviewHTML += `
+                    <div class="review-item">
+                        <strong>Q${q.id}:</strong> ${q.question}<br><br>
+                        <span style="color: ${isCorrect ? '#10b981' : '#ef4444'}">
+                            Your answer: ${userAnswer}
+                        </span><br>
+                        <span style="color: #10b981">Correct: ${q.options[q.correct]}</span><br>
+                        <em>${q.explanation}</em>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('reviewSection').innerHTML = `
+                <h3 style="margin-bottom: 1rem;">Review Your Answers</h3>
+                ${reviewHTML}
+            `;
+        }
+        
+        window.restartQuiz = function() {
+            attemptNumber++;
+            currentQuestionIndex = 0;
+            selectedAnswers = new Array(questions.length).fill(null);
+            quizCompleted = false;
+            timeRemaining = QUIZ_CONFIG.timeLimit;
+            clearInterval(timerInterval);
+            document.getElementById('quizBody').style.display = 'block';
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('timerDisplay').style.color = '';
+            
+            // Remove extra certificate buttons
+            const extraBtns = document.querySelectorAll('#resultsScreen button:not(.btn-submit)');
+            extraBtns.forEach(btn => btn.remove());
+            
+            renderQuestion();
+            startTimer();
+        }
+
+        function generateCertificate() {
+            const correctCount = selectedAnswers.filter((ans, i) => ans === questions[i].correct).length;
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            const topicScores = calcTopicScores();
+            const timeTaken = getTimeTaken();
+            const passed = percentage >= QUIZ_CONFIG.passingScore;
+
+            // Submit to Google Sheets & trigger email
+            submitToSheets({
+                timestamp: new Date().toLocaleString(),
+                employeeName,
+                score: percentage,
+                correct: correctCount,
+                total: questions.length,
+                passFail: passed ? 'Pass' : 'Fail',
+                timeTaken,
+                attempt: attemptNumber,
+                certificateEarned: passed ? 'Yes' : 'No',
+                ...topicScores
+            });
+
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = '#1e40af';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+            
+            ctx.fillStyle = '#1e40af';
+            ctx.font = 'bold 42px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(QUIZ_CONFIG.certificateTitle, canvas.width/2, 120);
+            
+            ctx.font = '24px Inter, sans-serif';
+            ctx.fillText(QUIZ_CONFIG.companyName, canvas.width/2, 170);
+            
+            ctx.font = 'bold 32px Inter, sans-serif';
+            ctx.fillText('This certifies that', canvas.width/2, 240);
+            
+            ctx.font = 'italic 36px Inter, sans-serif';
+            ctx.fillText('[Employee Name]', canvas.width/2, 290);
+            
+            ctx.font = 'bold 28px Inter, sans-serif';
+            ctx.fillText('has successfully completed', canvas.width/2, 340);
+            
+            ctx.font = '28px Inter, sans-serif';
+            ctx.fillText(QUIZ_CONFIG.title, canvas.width/2, 390);
+            
+            ctx.font = 'bold 36px Inter, sans-serif';
+            ctx.fillText(`${percentage}% Score`, canvas.width/2, 460);
+            
+            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            ctx.font = '20px Inter, sans-serif';
+            ctx.fillText(`Issued on ${date}`, canvas.width/2, 520);
+            
+            ctx.fillText('__________________________', canvas.width/2, 570);
+            ctx.font = '18px Inter, sans-serif';
+            ctx.fillText('Edward Breedlove, Founder', canvas.width/2, 595);
+            
+            const link = document.createElement('a');
+            link.download = 'Assessment_Certificate.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function startTimer() {
+            const timerEl = document.getElementById('timerDisplay');
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                if (timeRemaining <= 300) {
+                    timerEl.style.color = '#ef4444';
+                }
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time's up! Submitting quiz automatically.");
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("%c✅ 49-question assessment loaded! Ready for employees.", "color: #10b981; font-weight: bold");
+            document.getElementById('employeeNameInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') startQuiz();
+            });
+        });
+    </script>
+</body>
+</html>
